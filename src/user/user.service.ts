@@ -4,6 +4,7 @@ import { CreateUserDto } from './dtos/createUser.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from './user.entity';
 import { Repository } from 'typeorm';
+import { IUserFindParam } from './interfaces/user';
 
 @Injectable()
 export class UserService implements IUserService {
@@ -12,13 +13,21 @@ export class UserService implements IUserService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  createUser(userDetails: CreateUserDto) {
-    const existEmail = this.userRepository.findOneBy({
+  async createUser(userDetails: CreateUserDto) {
+    const existEmail = await this.userRepository.findOneBy({
       email: userDetails.email,
     });
-
     if (existEmail) {
-      throw new HttpException('test', HttpStatus.UNAUTHORIZED);
+      throw new HttpException(
+        'This email already exists',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
     }
+    const user = this.userRepository.create(userDetails);
+    return this.userRepository.save(user);
+  }
+
+  async findUser(param: IUserFindParam): Promise<UserEntity> {
+    return this.userRepository.findOneBy(param);
   }
 }

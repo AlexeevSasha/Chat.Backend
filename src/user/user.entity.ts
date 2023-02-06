@@ -3,8 +3,8 @@ import { hashPassword } from '../utils/helpers/hashPassword';
 
 @Entity('users')
 export class UserEntity {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column({ nullable: true })
   email: string;
