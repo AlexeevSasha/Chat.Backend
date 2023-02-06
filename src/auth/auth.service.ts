@@ -8,5 +8,6 @@ export class AuthService implements IAuthService {
   constructor(
     @Inject(Services.USERS) private readonly userService: IUserService,
   ) {}
+
   validateUser() {}
 }
