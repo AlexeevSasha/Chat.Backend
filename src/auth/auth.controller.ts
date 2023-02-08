@@ -1,44 +1,51 @@
 import {
   Body,
   Controller,
-  Get,
+  HttpCode,
+  HttpStatus,
   Inject,
   Post,
-  Res,
-  Session,
   UseGuards,
 } from '@nestjs/common';
 import { Routes } from '../utils/constants/routes';
 import { Services } from '../utils/constants/services';
 import { IAuthService } from './interfaces/auth.service';
-import { IUserService } from '../user/interfaces/user.service';
-import { CreateUserDto } from '../user/dtos/createUser.dto';
-import { LocalAuthGuard } from './guards/localAuthGuard';
-import { Response } from 'express';
-import { UserEntity } from '../user/user.entity';
+import { CreateUserDto } from './dto/createUser.dto';
+import { LoginUserDto } from './dto/loginUser.dto';
+import { AuthGuard as AuthGuardPassport } from '@nestjs/passport';
+import { AuthGuard } from './guards/AuthGuard';
+import { GetUser } from '../user/decorators/user.decorator';
+import { IJwtPayloadRefresh } from './interfaces/jwt.payload';
+import { IUserResponse } from './interfaces/user.responce';
 
 @Controller(Routes.AUTH)
 export class AuthController {
   constructor(
     @Inject(Services.AUTH) private readonly authService: IAuthService,
-    @Inject(Services.USERS) private readonly userService: IUserService,
   ) {}
 
   @Post('register')
-  async createUser(@Body() createUserDto: CreateUserDto): Promise<UserEntity> {
-    return await this.userService.createUser(createUserDto);
+  @HttpCode(HttpStatus.CREATED)
+  async createUser(@Body() payload: CreateUserDto): Promise<IUserResponse> {
+    const user = await this.authService.createUser(payload);
+    return await this.authService.buildUserResponseWithTokens(user);
   }
 
   @Post('login')
-  @UseGuards(LocalAuthGuard)
-  loginUser(@Res() res: Response, @Session() session: Record<string, any>) {
-    console.log(session.cookie);
-    return res.send(session.passport.user);
+  async loginUser(@Body() payload: LoginUserDto): Promise<IUserResponse> {
+    const user = await this.authService.validateUser(payload);
+    return await this.authService.buildUserResponseWithTokens(user);
   }
 
-  @Get('status')
-  statusUser() {}
-
+  @UseGuards(AuthGuard)
   @Post('logout')
-  logoutUser() {}
+  async logoutUser(@GetUser('id') id: string) {
+    return await this.authService.logout(id);
+  }
+
+  @UseGuards(AuthGuardPassport('jwt-refresh'))
+  @Post('refresh')
+  refreshToken(@GetUser() data: IJwtPayloadRefresh) {
+    return this.authService.refreshToken(data.id, data.refreshToken);
+  }
 }

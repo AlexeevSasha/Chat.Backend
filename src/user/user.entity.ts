@@ -1,12 +1,12 @@
 import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-import { hashPassword } from '../utils/helpers/hashPassword';
+import { hash } from 'argon2';
 
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
+  @Column()
   email: string;
 
   @Column()
@@ -18,9 +18,12 @@ export class UserEntity {
   @Column({ select: false })
   password: string;
 
+  @Column({ select: false, nullable: true })
+  refresh_token: string;
+
   @BeforeInsert()
   async hashPassword() {
     if (!this.password) return;
-    this.password = await hashPassword(this.password);
+    this.password = await hash(this.password);
   }
 }
