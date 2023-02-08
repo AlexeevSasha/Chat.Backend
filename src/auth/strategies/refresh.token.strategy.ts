@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { IJwtPayload, JwtPayloadRefresh } from '../interfaces/jwt.payload';
+import { IJwtPayload, IJwtPayloadRefresh } from '../interfaces/jwt.payload';
 import { Request } from 'express';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class RefreshTokenStrategy extends PassportStrategy(
     });
   }
 
-  validate(req: Request, payload: IJwtPayload): JwtPayloadRefresh {
+  validate(req: Request, payload: IJwtPayload): IJwtPayloadRefresh {
     const refreshToken = req
       ?.get('authorization')
       ?.replace('Bearer', '')

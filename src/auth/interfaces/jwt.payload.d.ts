@@ -1,8 +1,8 @@
 export interface IJwtPayload {
+  id: string;
   email: string;
-  sub: number;
 }
 
-export interface JwtPayloadRefresh extends JwtPayload {
+export interface IJwtPayloadRefresh extends IJwtPayload {
   refreshToken: string;
 }

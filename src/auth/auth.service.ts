@@ -1,4 +1,5 @@
 import {
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -13,6 +14,7 @@ import { ITokens } from './interfaces/tokens';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from './dto/createUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
+import { IUserResponse } from './interfaces/user.responce';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -32,25 +34,21 @@ export class AuthService implements IAuthService {
         HttpStatus.UNPROCESSABLE_ENTITY,
       );
     }
-    const user = await this.userRepository.save(
-      this.userRepository.create(createUser),
-    );
-    const tokens = await this.getTokens(user.id, user.email);
-    await this.updateRefreshHash(user.id, tokens.refresh_token);
 
-    delete user.password;
-    delete user.refresh_token;
-    return {
-      refresh_token: tokens.refresh_token,
-      access_token: tokens.access_token,
-      user,
-    };
+    return this.userRepository.save(this.userRepository.create(createUser));
   }
 
   async validateUser({ email, password }: LoginUserDto): Promise<UserEntity> {
     const user = await this.userRepository.findOne({
       where: { email },
-      select: ['email', 'id', 'password', 'firstname', 'lastname'],
+      select: [
+        'email',
+        'id',
+        'password',
+        'firstname',
+        'lastname',
+        'refresh_token',
+      ],
     });
     if (!user) throw new UnauthorizedException('Wrong password or login');
 
@@ -58,21 +56,48 @@ export class AuthService implements IAuthService {
     if (!checkPassword)
       throw new UnauthorizedException('Wrong password or login');
 
-    delete user.password;
-
     return user;
   }
 
   async logout(id: string): Promise<boolean> {
-    const test = await this.userRepository.update(
+    const deleteRefresh = await this.userRepository.update(
       { id },
       {
         refresh_token: null,
       },
     );
 
-    console.log(test);
-    return true;
+    return !!deleteRefresh.affected;
+  }
+
+  async buildUserResponseWithTokens(user: UserEntity): Promise<IUserResponse> {
+    const { access_token, refresh_token } = await this.getTokens(
+      user.id,
+      user.email,
+    );
+
+    delete user.refresh_token;
+    delete user.password;
+
+    return { user, access_token, refresh_token };
+  }
+
+  async refreshToken(id: string, rt: string): Promise<ITokens> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      select: ['id', 'email', 'refresh_token'],
+    });
+    if (!user || !user.refresh_token)
+      throw new ForbiddenException('Your access token has expired');
+
+    const checkRefresh = await verify(user.refresh_token, rt);
+    if (!checkRefresh)
+      throw new ForbiddenException('Your access token has expired');
+
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRefreshHash(user.id, tokens.refresh_token);
+
+    return tokens;
   }
 
   private async getTokens(id: string, email: string): Promise<ITokens> {
@@ -89,8 +114,6 @@ export class AuthService implements IAuthService {
 
     return { access_token, refresh_token };
   }
-
-  refreshToken() {}
 
   private async updateRefreshHash(id: string, rt: string): Promise<void> {
     const hashToken = await hash(rt);
