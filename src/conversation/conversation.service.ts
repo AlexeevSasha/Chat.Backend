@@ -25,7 +25,7 @@ export class ConversationService implements IConversationsService {
 
     if (user.id === recipientId)
       throw new HttpException(
-        'Cannot Create Conversation',
+        'Cannot create conversation',
         HttpStatus.BAD_REQUEST,
       );
 

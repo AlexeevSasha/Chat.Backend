@@ -76,6 +76,8 @@ export class AuthService implements IAuthService {
       user.email,
     );
 
+    await this.updateRefreshHash(user.id, refresh_token);
+
     delete user.refresh_token;
     delete user.password;
 
