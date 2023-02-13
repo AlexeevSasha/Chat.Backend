@@ -6,7 +6,7 @@ export class LoginUserDto {
   email: string;
 
   @IsNotEmpty()
-  @MinLength(2)
-  @MaxLength(32)
+  @MinLength(6)
+  @MaxLength(20)
   password: string;
 }

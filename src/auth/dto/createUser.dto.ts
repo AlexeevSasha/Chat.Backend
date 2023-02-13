@@ -6,17 +6,13 @@ export class CreateUserDto {
   email: string;
 
   @IsNotEmpty()
-  @MinLength(2)
-  @MaxLength(32)
+  @MinLength(6)
+  @MaxLength(20)
   password: string;
 
   @IsNotEmpty()
-  @MinLength(2)
-  @MaxLength(32)
   firstname: string;
 
   @IsNotEmpty()
-  @MinLength(2)
-  @MaxLength(32)
   lastname: string;
 }
