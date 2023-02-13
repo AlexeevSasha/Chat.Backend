@@ -1,9 +1,7 @@
 import {
+  BadRequestException,
   ForbiddenException,
-  HttpException,
-  HttpStatus,
   Injectable,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { IAuthService } from './interfaces/auth.service';
 import { UserEntity } from '../user/user.entity';
@@ -15,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto } from './dto/createUser.dto';
 import { LoginUserDto } from './dto/loginUser.dto';
 import { IUserResponse } from './interfaces/user.responce';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -24,16 +23,11 @@ export class AuthService implements IAuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async createUser(createUser: CreateUserDto): Promise<any> {
+  async createUser(createUser: CreateUserDto): Promise<UserEntity> {
     const existEmail = await this.userRepository.findOneBy({
       email: createUser.email,
     });
-    if (existEmail) {
-      throw new HttpException(
-        'This email already exists',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
-    }
+    if (existEmail) throw new BadRequestException('This email already exists');
 
     return this.userRepository.save(this.userRepository.create(createUser));
   }
@@ -50,11 +44,11 @@ export class AuthService implements IAuthService {
         'refresh_token',
       ],
     });
-    if (!user) throw new UnauthorizedException('Wrong password or login');
+    if (!user) throw new BadRequestException('Wrong password or login');
 
     const checkPassword = await verify(user.password, password);
     if (!checkPassword)
-      throw new UnauthorizedException('Wrong password or login');
+      throw new BadRequestException('Wrong password or login');
 
     return user;
   }
@@ -70,7 +64,10 @@ export class AuthService implements IAuthService {
     return !!deleteRefresh.affected;
   }
 
-  async buildUserResponseWithTokens(user: UserEntity): Promise<IUserResponse> {
+  async buildUserResponseWithTokens(
+    user: UserEntity,
+    res: Response,
+  ): Promise<IUserResponse> {
     const { access_token, refresh_token } = await this.getTokens(
       user.id,
       user.email,
@@ -81,6 +78,10 @@ export class AuthService implements IAuthService {
     delete user.refresh_token;
     delete user.password;
 
+    res.cookie('refresh_token', refresh_token, {
+      maxAge: 15 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+    });
     return { user, access_token, refresh_token };
   }
 
@@ -106,7 +107,7 @@ export class AuthService implements IAuthService {
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(
         { id, email },
-        { secret: process.env.ACCESS_TOKEN_SECRET, expiresIn: '15m' },
+        { secret: process.env.ACCESS_TOKEN_SECRET, expiresIn: '60s' },
       ),
       this.jwtService.signAsync(
         { id, email },
