@@ -82,7 +82,7 @@ export class AuthService implements IAuthService {
       maxAge: 15 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     });
-    return { user, access_token, refresh_token };
+    return { user, access_token };
   }
 
   async refreshToken(id: string, rt: string): Promise<ITokens> {
@@ -107,7 +107,7 @@ export class AuthService implements IAuthService {
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(
         { id, email },
-        { secret: process.env.ACCESS_TOKEN_SECRET, expiresIn: '60s' },
+        { secret: process.env.ACCESS_TOKEN_SECRET, expiresIn: '5s' },
       ),
       this.jwtService.signAsync(
         { id, email },

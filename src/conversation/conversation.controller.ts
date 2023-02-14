@@ -1,4 +1,4 @@
-import { Body, Controller, Inject, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Inject, Post, UseGuards } from '@nestjs/common';
 import { Services } from '../utils/constants/services';
 import { IConversationsService } from './interfaces/conversation.service';
 import { Routes } from '../utils/constants/routes';
@@ -20,5 +20,10 @@ export class ConversationController {
     @Body() payload: CreateConversationDto,
   ) {
     return await this.conversationsService.createConversation(id, payload);
+  }
+
+  @Get('test')
+  async getConf() {
+    return { test: 'а вот и я' };
   }
 }

@@ -19,6 +19,7 @@ import { GetUser } from '../user/decorators/user.decorator';
 import { IJwtPayloadRefresh } from './interfaces/jwt.payload';
 import { IUserResponse } from './interfaces/user.responce';
 import { Response } from 'express';
+import { ITokens } from './interfaces/tokens';
 
 @Controller(Routes.AUTH)
 export class AuthController {
@@ -65,7 +66,7 @@ export class AuthController {
   async refreshToken(
     @GetUser() data: IJwtPayloadRefresh,
     @Res({ passthrough: true }) res: Response,
-  ) {
+  ): Promise<Pick<ITokens, 'access_token'>> {
     const { access_token, refresh_token } = await this.authService.refreshToken(
       data.id,
       data.refreshToken,
@@ -77,6 +78,6 @@ export class AuthController {
       httpOnly: true,
     });
 
-    return { access_token, refresh_token };
+    return { access_token };
   }
 }
