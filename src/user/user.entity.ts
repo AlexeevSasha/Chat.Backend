@@ -1,5 +1,13 @@
-import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { hash } from 'argon2';
+import { MessageEntity } from '../message/message.entity';
 
 @Entity('users')
 export class UserEntity {
@@ -20,6 +28,10 @@ export class UserEntity {
 
   @Column({ select: false, nullable: true })
   refresh_token: string;
+
+  @OneToMany(() => MessageEntity, (message) => message.author)
+  @JoinColumn()
+  messages: MessageEntity[];
 
   @BeforeInsert()
   async hashPassword() {

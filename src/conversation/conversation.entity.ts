@@ -2,10 +2,12 @@ import {
   Entity,
   Index,
   JoinColumn,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
+import { MessageEntity } from '../message/message.entity';
 
 @Entity('conversations')
 @Index(['creator.id', 'recipient.id'], { unique: true })
@@ -20,4 +22,14 @@ export class ConversationEntity {
   @OneToOne(() => UserEntity, { createForeignKeyConstraints: false })
   @JoinColumn()
   recipient: UserEntity;
+
+  @OneToMany(() => MessageEntity, (message) => message.conversation, {
+    cascade: ['insert', 'remove', 'update'],
+  })
+  @JoinColumn()
+  messages: MessageEntity[];
+
+  @OneToOne(() => MessageEntity)
+  @JoinColumn({ name: 'last_message' })
+  lastMessage: MessageEntity;
 }
