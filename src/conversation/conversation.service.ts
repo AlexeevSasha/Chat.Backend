@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { IConversationsService } from './interfaces/conversation.service';
+import { IConversationService } from './interfaces/conversation.service';
 import { CreateConversationDto } from './dto/createConversation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../user/user.entity';
@@ -7,7 +7,7 @@ import { Repository } from 'typeorm';
 import { ConversationEntity } from './conversation.entity';
 
 @Injectable()
-export class ConversationService implements IConversationsService {
+export class ConversationService implements IConversationService {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,

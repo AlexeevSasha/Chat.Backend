@@ -5,6 +5,7 @@ import { typeormConfig } from '../database/typeorm.config';
 import { UserModule } from '../user/user.module';
 import { PassportModule } from '@nestjs/passport';
 import { ConversationModule } from '../conversation/conversation.module';
+import { MessageModule } from '../message/message.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { ConversationModule } from '../conversation/conversation.module';
     AuthModule,
     UserModule,
     ConversationModule,
+    MessageModule,
   ],
   controllers: [],
   providers: [],
