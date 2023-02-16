@@ -107,7 +107,7 @@ export class AuthService implements IAuthService {
     const [access_token, refresh_token] = await Promise.all([
       this.jwtService.signAsync(
         { id, email },
-        { secret: process.env.ACCESS_TOKEN_SECRET, expiresIn: '5s' },
+        { secret: process.env.ACCESS_TOKEN_SECRET, expiresIn: '1d' },
       ),
       this.jwtService.signAsync(
         { id, email },
