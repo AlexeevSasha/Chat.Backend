@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { IConversationService } from './interfaces/conversation.service';
 import { CreateConversationDto } from './dto/createConversation.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -17,17 +17,13 @@ export class ConversationService implements IConversationService {
   ) {}
 
   async createConversation(
-    id: string,
+    user: UserEntity,
     conversationsDetails: CreateConversationDto,
   ) {
     const { recipientId } = conversationsDetails;
-    const user = await this.userRepository.findOneBy({ id });
 
     if (user.id === recipientId)
-      throw new HttpException(
-        'Cannot create conversation',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new BadRequestException('Cannot create conversation');
 
     const existingConversation = await this.conversationRepository.findOne({
       where: [
@@ -43,12 +39,11 @@ export class ConversationService implements IConversationService {
     });
 
     if (existingConversation)
-      throw new HttpException('Conversation exists', HttpStatus.CONFLICT);
+      throw new BadRequestException('Conversation exists');
 
     const recipient = await this.userRepository.findOneBy({ id: recipientId });
 
-    if (!recipient)
-      throw new HttpException('Recipient not found', HttpStatus.BAD_REQUEST);
+    if (!recipient) throw new BadRequestException('Recipient not found');
 
     const conversation = this.conversationRepository.create({
       creator: user,
@@ -56,5 +51,25 @@ export class ConversationService implements IConversationService {
     });
 
     return this.conversationRepository.save(conversation);
+  }
+
+  async getConversations(id: string): Promise<ConversationEntity[]> {
+    return this.conversationRepository
+      .createQueryBuilder('conversation')
+      .leftJoinAndSelect('conversation.creator', 'creator')
+      .where('creator.id = :id', { id })
+      .leftJoinAndSelect('conversation.recipient', 'recipient')
+      .orWhere('recipient.id = :id', { id })
+      .orderBy('conversation.id', 'DESC')
+      .getMany();
+  }
+
+  async getConversationById(id: string): Promise<ConversationEntity> {
+    const conversation = await this.conversationRepository.findOne({
+      where: { id },
+      relations: ['creator', 'recipient', 'messages', 'messages.author'],
+    });
+    if (!conversation) throw new BadRequestException('Conversation not fount');
+    return conversation;
   }
 }

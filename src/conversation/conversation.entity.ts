@@ -1,4 +1,5 @@
 import {
+  CreateDateColumn,
   Entity,
   Index,
   JoinColumn,
@@ -32,4 +33,7 @@ export class ConversationEntity {
   @OneToOne(() => MessageEntity)
   @JoinColumn({ name: 'last_message' })
   lastMessage: MessageEntity;
+
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: number;
 }
