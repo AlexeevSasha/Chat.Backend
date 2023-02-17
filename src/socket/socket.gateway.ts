@@ -8,10 +8,12 @@ import {
 import { Server, Socket } from 'socket.io';
 import { OnEvent } from '@nestjs/event-emitter';
 
-@WebSocketGateway(8001, {
+@WebSocketGateway(+process.env.SOCKET_PORT, {
+  transport: ['websocket'],
   cors: {
     origin: ['http://localhost:5500'],
     methods: ['GET', 'POST'],
+    credentials: true,
   },
 })
 export class MessagingGateway implements OnGatewayConnection {
@@ -19,7 +21,7 @@ export class MessagingGateway implements OnGatewayConnection {
   server: Server;
 
   handleConnection(client: Socket, ...args) {
-    console.log('New Incoming Connection');
+    console.log('New Connection');
     console.log(client.id, args);
     client.emit('connected', { status: 'good' });
   }

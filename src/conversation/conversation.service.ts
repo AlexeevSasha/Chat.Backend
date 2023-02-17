@@ -59,6 +59,7 @@ export class ConversationService implements IConversationService {
       .leftJoinAndSelect('conversation.creator', 'creator')
       .where('creator.id = :id', { id })
       .leftJoinAndSelect('conversation.recipient', 'recipient')
+      .leftJoinAndSelect('conversation.lastMessage', 'lastMessage')
       .orWhere('recipient.id = :id', { id })
       .orderBy('conversation.id', 'DESC')
       .getMany();
