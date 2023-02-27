@@ -82,6 +82,10 @@ export class AuthService implements IAuthService {
       maxAge: 15 * 24 * 60 * 60 * 1000,
       httpOnly: true,
     });
+    res.cookie('id', user.id, {
+      maxAge: 15 * 24 * 60 * 60 * 1000,
+      httpOnly: true,
+    });
     return { user, access_token };
   }
 

@@ -4,7 +4,6 @@ import {
   Get,
   Inject,
   Param,
-  ParseIntPipe,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -36,13 +35,12 @@ export class MessageController {
       user,
       ...createMessage,
     });
-    this.eventEmitter.emit('message.create', message);
-    return;
+    this.eventEmitter.emit('send_message', message);
   }
 
   @Get(':conversationId')
   async getMessagesByConversationId(
-    @Param('conversationId', ParseIntPipe) id: string,
+    @Param('conversationId') id: string,
   ): Promise<{ id: string; messages: MessageEntity[] }> {
     const messages = await this.messageService.getMessagesByConversationId(id);
     return { id, messages };

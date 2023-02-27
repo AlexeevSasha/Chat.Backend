@@ -6,6 +6,7 @@ import {
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '../user/user.entity';
 import { MessageEntity } from '../message/message.entity';
@@ -33,6 +34,9 @@ export class ConversationEntity {
   @OneToOne(() => MessageEntity)
   @JoinColumn({ name: 'last_message' })
   lastMessage: MessageEntity;
+
+  @UpdateDateColumn({ name: 'updated_at' })
+  lastMessageAt: Date;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: number;

@@ -23,7 +23,7 @@ export class MessageService implements IMessageService {
   }: CreateMessageDto & { user: UserEntity }) {
     const conversation = await this.conversationRepository.findOne({
       where: { id: conversationId },
-      relations: ['creator', 'recipient'],
+      relations: ['creator', 'recipient', 'lastMessage'],
     });
 
     if (!conversation) throw new BadRequestException('Conversation not found');
@@ -35,7 +35,7 @@ export class MessageService implements IMessageService {
       throw new BadRequestException('Cannot Create Message');
     }
 
-    const newMessage = await this.messageRepository.save(
+    const message = await this.messageRepository.save(
       this.messageRepository.create({
         content,
         conversation,
@@ -43,10 +43,12 @@ export class MessageService implements IMessageService {
       }),
     );
 
-    conversation.lastMessage = newMessage;
-    await this.conversationRepository.save(conversation);
+    conversation.lastMessage = message;
+    const updatedConversation = await this.conversationRepository.save(
+      conversation,
+    );
 
-    return newMessage;
+    return { message: message, conversation: updatedConversation };
   }
 
   getMessagesByConversationId(id: string): Promise<MessageEntity[]> {

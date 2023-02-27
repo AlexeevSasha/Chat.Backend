@@ -58,6 +58,11 @@ export class AuthController {
       maxAge: 0,
       httpOnly: true,
     });
+    res.cookie('id', '', {
+      path: '/',
+      maxAge: 0,
+      httpOnly: true,
+    });
 
     return await this.authService.logout(id);
   }
