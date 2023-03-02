@@ -3,22 +3,16 @@ import { Socket } from 'socket.io';
 import { parse } from 'cookie';
 import { Services } from '../utils/constants/services';
 import { IUserService } from '../user/interfaces/user.service';
-import { WsException } from '@nestjs/websockets';
+import { ISocketService } from './interfaces/socket.service';
 
 @Injectable()
-export class SocketService {
+export class SocketService implements ISocketService {
   constructor(
     @Inject(Services.USERS) private readonly userService: IUserService,
   ) {}
 
   async getUserFromSocket(socket: Socket) {
-    const { id } = parse(socket.handshake.headers.cookie);
-    const user = await this.userService.findUser({ id });
-
-    if (!user) {
-      throw new WsException('Invalid credentials.');
-    }
-
-    return user;
+    const { id } = parse(String(socket.handshake.headers.cookie));
+    return await this.userService.findUser({ id });
   }
 }

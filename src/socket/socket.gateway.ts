@@ -1,5 +1,4 @@
 import {
-  MessageBody,
   OnGatewayConnection,
   WebSocketGateway,
   WebSocketServer,
@@ -7,6 +6,8 @@ import {
 import { Server, Socket } from 'socket.io';
 import { SocketService } from './socket.service';
 import { OnEvent } from '@nestjs/event-emitter';
+import { ConversationEntity } from '../conversation/conversation.entity';
+import { MessageEntity } from '../message/message.entity';
 
 @WebSocketGateway(+process.env.SOCKET_PORT, {
   transport: ['websocket'],
@@ -15,23 +16,47 @@ import { OnEvent } from '@nestjs/event-emitter';
     methods: ['GET', 'POST'],
     credentials: true,
   },
+  pingInterval: 1000,
 })
-export class MessagingGateway implements OnGatewayConnection {
+export class SocketGateway implements OnGatewayConnection {
+  private connectedUsers: Map<string, any> = new Map();
+
   @WebSocketServer()
   server: Server;
 
   constructor(private readonly socketService: SocketService) {}
 
   async handleConnection(socket: Socket) {
-    await this.socketService.getUserFromSocket(socket);
-    socket.emit('connected', { status: 'good' });
+    const user = await this.socketService.getUserFromSocket(socket);
+    if (user) {
+      this.connectedUsers.set(user.id, user);
+      console.log(this.connectedUsers);
+      socket.emit('connected', { status: 'good' });
+    }
+  }
+  async handleDisconnect(socket: Socket) {
+    console.log('disconect');
+    const user = await this.socketService.getUserFromSocket(socket);
+    if (user) {
+      this.connectedUsers.delete(user.id);
+    }
   }
 
   //message
-  @OnEvent('send_message')
-  async listenForMessages(@MessageBody() content: string) {
-    this.server.sockets.emit('receive_message', {
-      content,
-    });
+  @OnEvent('message.send')
+  async listenForMessages(payload: MessageEntity) {
+    this.server.sockets.emit('message', payload);
+  }
+
+  //conversation
+  @OnEvent('conversation.test')
+  tess(payload: any) {
+    this.server.sockets.emit('conversation.test', payload);
+  }
+
+  //conversation
+  @OnEvent('conversation.create')
+  handleConversationCreateEvent(payload: ConversationEntity) {
+    this.server.sockets.emit('conversation', payload);
   }
 }

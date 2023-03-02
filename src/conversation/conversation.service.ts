@@ -25,6 +25,9 @@ export class ConversationService implements IConversationService {
     if (user.id === recipientId)
       throw new BadRequestException('Cannot create conversation');
 
+    const recipient = await this.userRepository.findOneBy({ id: recipientId });
+    if (!recipient) throw new BadRequestException('Recipient not found');
+
     const existingConversation = await this.conversationRepository.findOne({
       where: [
         {
@@ -40,10 +43,6 @@ export class ConversationService implements IConversationService {
 
     if (existingConversation)
       throw new BadRequestException('Conversation exists');
-
-    const recipient = await this.userRepository.findOneBy({ id: recipientId });
-
-    if (!recipient) throw new BadRequestException('Recipient not found');
 
     const conversation = this.conversationRepository.create({
       creator: user,

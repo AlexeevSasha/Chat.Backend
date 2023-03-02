@@ -35,7 +35,7 @@ export class MessageController {
       user,
       ...createMessage,
     });
-    this.eventEmitter.emit('send_message', message);
+    this.eventEmitter.emit('message.send', message);
   }
 
   @Get(':conversationId')
