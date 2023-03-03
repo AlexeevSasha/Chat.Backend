@@ -20,7 +20,6 @@ import { MessageEntity } from '../message/message.entity';
 })
 export class SocketGateway implements OnGatewayConnection {
   private connectedUsers: Map<string, any> = new Map();
-
   @WebSocketServer()
   server: Server;
 
@@ -28,30 +27,21 @@ export class SocketGateway implements OnGatewayConnection {
 
   async handleConnection(socket: Socket) {
     const user = await this.socketService.getUserFromSocket(socket);
-    if (user) {
-      this.connectedUsers.set(user.id, user);
-      console.log(this.connectedUsers);
-      socket.emit('connected', { status: 'good' });
-    }
+    this.connectedUsers.set(socket.id, user);
+    socket.emit('connected', user.id);
+    console.log('connect', this.connectedUsers);
   }
-  async handleDisconnect(socket: Socket) {
-    console.log('disconect');
-    const user = await this.socketService.getUserFromSocket(socket);
-    if (user) {
-      this.connectedUsers.delete(user.id);
-    }
+
+  handleDisconnect(socket: Socket): void {
+    this.connectedUsers.delete(socket.id);
+    console.log('disconect', this.connectedUsers);
+    socket.disconnect();
   }
 
   //message
   @OnEvent('message.send')
   async listenForMessages(payload: MessageEntity) {
     this.server.sockets.emit('message', payload);
-  }
-
-  //conversation
-  @OnEvent('conversation.test')
-  tess(payload: any) {
-    this.server.sockets.emit('conversation.test', payload);
   }
 
   //conversation
