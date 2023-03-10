@@ -1,11 +1,11 @@
-import { CreateMessageDto } from '../dto/createMessage.dto';
-import { UserEntity } from '../../user/user.entity';
 import { MessageEntity } from '../message.entity';
 import { ICreateMessageResponse } from './message.response';
+import { ICreateMessageParam, IDeleteMessageParams } from './message.param';
 
 export interface IMessageService {
   createMessage: (
-    param: CreateMessageDto & { user: UserEntity },
+    param: ICreateMessageParam,
   ) => Promise<ICreateMessageResponse>;
-  getMessagesByConversationId: (id: string) => Promise<MessageEntity[]>;
+  getMessages: (id: string) => Promise<MessageEntity[]>;
+  deleteMessage: (param: IDeleteMessageParams) => Promise<any>;
 }

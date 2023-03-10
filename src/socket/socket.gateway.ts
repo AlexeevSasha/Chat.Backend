@@ -29,12 +29,10 @@ export class SocketGateway implements OnGatewayConnection {
     const user = await this.socketService.getUserFromSocket(socket);
     this.connectedUsers.set(socket.id, user);
     socket.emit('connected', user.id);
-    console.log('connect', this.connectedUsers);
   }
 
   handleDisconnect(socket: Socket): void {
     this.connectedUsers.delete(socket.id);
-    console.log('disconect', this.connectedUsers);
     socket.disconnect();
   }
 

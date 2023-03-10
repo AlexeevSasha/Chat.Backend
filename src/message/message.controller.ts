@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Inject,
   Param,
@@ -26,14 +27,16 @@ export class MessageController {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  @Post()
+  @Post(':id')
   async createMessage(
     @GetUser() user: UserEntity,
     @Body() createMessage: CreateMessageDto,
+    @Param('id') conversationId: string,
   ) {
     const message = await this.messageService.createMessage({
       user,
       ...createMessage,
+      conversationId,
     });
     this.eventEmitter.emit('message.send', message);
   }
@@ -42,7 +45,20 @@ export class MessageController {
   async getMessagesByConversationId(
     @Param('conversationId') id: string,
   ): Promise<{ id: string; messages: MessageEntity[] }> {
-    const messages = await this.messageService.getMessagesByConversationId(id);
+    const messages = await this.messageService.getMessages(id);
     return { id, messages };
+  }
+
+  @Delete(':messageId')
+  async deleteMessageByConversationId(
+    @GetUser('id') userId: string,
+    @Param('id') conversationId: string,
+    @Param('messageId') messageId: string,
+  ) {
+    await this.messageService.deleteMessage({
+      userId,
+      conversationId,
+      messageId,
+    });
   }
 }

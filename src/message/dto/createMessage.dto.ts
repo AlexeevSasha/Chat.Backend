@@ -4,8 +4,4 @@ export class CreateMessageDto {
   @IsNotEmpty()
   @IsString()
   content: string;
-
-  @IsNotEmpty()
-  @IsString()
-  conversationId: string;
 }

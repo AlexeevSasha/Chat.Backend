@@ -40,12 +40,11 @@ export class ConversationController {
 
   @Get()
   async getConversations(@GetUser('id') id: string) {
-    this.events.emit('conversation.test', 'ебать ты лохопед');
     return this.conversationService.getConversations(id);
   }
 
   @Get(':id')
   async getConversationById(@Param('id') id: string) {
-    return this.conversationService.getConversationById(id);
+    return this.conversationService.findById(id);
   }
 }
