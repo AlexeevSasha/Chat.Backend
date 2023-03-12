@@ -67,11 +67,14 @@ export class MessageService implements IMessageService {
     });
     if (!conversation) throw new BadRequestException('Conversation not found');
 
-    const message = await this.messageRepository.findOneBy({
-      id: messageId,
-      author: { id: userId },
-      conversation: { id: conversationId },
+    const message = await this.messageRepository.findOne({
+      where: {
+        id: messageId,
+        author: { id: userId },
+        conversation: { id: conversationId },
+      },
     });
+
     if (!message) throw new BadRequestException('Cannot delete message');
 
     if (conversation.lastMessage.id === message.id) {

@@ -35,9 +35,6 @@ export class ConversationEntity {
   @JoinColumn({ name: 'last_message' })
   lastMessage: MessageEntity;
 
-  @UpdateDateColumn({ name: 'updated_at' })
-  lastMessageAt: Date;
-
   @CreateDateColumn({ name: 'created_at' })
   createdAt: number;
 }

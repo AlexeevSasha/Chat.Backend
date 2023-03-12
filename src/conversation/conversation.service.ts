@@ -65,7 +65,7 @@ export class ConversationService implements IConversationService {
       .leftJoinAndSelect('conversation.recipient', 'recipient')
       .leftJoinAndSelect('conversation.lastMessage', 'lastMessage')
       .orWhere('recipient.id=:id', { id })
-      .orderBy('conversation.lastMessageAt', 'DESC')
+      .orderBy('lastMessage.createdAt', 'DESC')
       .getMany();
   }
 
@@ -87,10 +87,10 @@ export class ConversationService implements IConversationService {
   getMessages({ id, limit }: IGetMessages): Promise<ConversationEntity> {
     return this.conversationRepository
       .createQueryBuilder('conversation')
-      .where('id = :id', { id })
+      .where('id=:id', { id })
       .leftJoinAndSelect('conversation.lastMessage', 'lastMessage')
       .leftJoinAndSelect('conversation.messages', 'message')
-      .where('conversation.id = :id', { id })
+      .where('conversation.id=:id', { id })
       .orderBy('message.createdAt', 'DESC')
       .limit(limit)
       .getOne();

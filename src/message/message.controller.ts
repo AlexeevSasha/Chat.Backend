@@ -27,7 +27,7 @@ export class MessageController {
     private eventEmitter: EventEmitter2,
   ) {}
 
-  @Post(':id')
+  @Post()
   async createMessage(
     @GetUser() user: UserEntity,
     @Body() createMessage: CreateMessageDto,
